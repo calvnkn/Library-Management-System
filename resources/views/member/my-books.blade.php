@@ -1,0 +1,31 @@
+@extends('layouts.app')
+@section('title', 'My Books')
+@section('content')
+<h3>My Books</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr><th>Title</th><th>Type</th><th>Status</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Fine</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach ($requests as $r)
+        <tr>
+            <td>{{ $r->title }}</td>
+            <td>{{ ucfirst($r->type) }}</td>
+            <td>{{ ucfirst($r->status) }}</td>
+            <td>{{ $r->issue_date }}</td>
+            <td>{{ $r->due_date }}</td>
+            <td>{{ $r->return_date }}</td>
+            <td>{{ $r->fine_amount }}</td>
+            <td>
+                @if ($r->type === 'issue' && $r->status === 'approved')
+                <form method="POST" action="{{ route('member.requestReturn', $r->id) }}">
+                    @csrf
+                    <button class="btn btn-sm btn-warning" type="submit">Request Return</button>
+                </form>
+                @endif
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+@endsection
