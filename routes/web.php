@@ -7,6 +7,8 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\MemberBookRequestController;
 use App\Http\Controllers\Admin\AdminBookController;
 use App\Http\Controllers\Admin\AdminRequestController;
+use App\Http\Controllers\Admin\AdminDefaulterController;
+use App\Http\Controllers\Admin\AdminFineController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -18,6 +20,7 @@ Route::post('/register', [MemberAuthController::class, 'register']);
 Route::get('/login', [MemberAuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [MemberAuthController::class, 'login']);
 Route::post('/logout', [MemberAuthController::class, 'logout'])->name('logout');
+Route::post('/books/{id}/reserve', [MemberBookRequestController::class, 'requestReserve'])->name('books.reserve');
 
 // Member-only
 Route::middleware('member.auth')->group(function () {
@@ -51,3 +54,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::post('/requests/{id}/approve', [AdminRequestController::class, 'approve'])->name('admin.requests.approve');
     Route::post('/requests/{id}/reject', [AdminRequestController::class, 'reject'])->name('admin.requests.reject');
 });
+
+Route::get('/defaulters', [AdminDefaulterController::class, 'index'])->name('admin.defaulters.index');
+Route::get('/fines', [AdminFineController::class, 'index'])->name('admin.fines.index');
+Route::post('/fines/{id}/resolve', [AdminFineController::class, 'resolve'])->name('admin.fines.resolve');

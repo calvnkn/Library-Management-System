@@ -53,10 +53,9 @@ class AdminRequestController extends Controller
                 ->where('status', 'approved')
                 ->first();
 
-            // Basic late fine calc; to be expanded when we build the Fines module
             if ($issueRecord && $issueRecord->due_date && now()->gt($issueRecord->due_date)) {
                 $daysLate = now()->diffInDays($issueRecord->due_date);
-                $fine = $daysLate * 5; // placeholder rate for now, to be adjust later
+                $fine = $daysLate * 5; // placeholder rate
             }
 
             DB::table('books')->where('id', $bookRequest->book_id)->increment('available_copies');
@@ -74,6 +73,40 @@ class AdminRequestController extends Controller
                     'updated_at' => now(),
                 ]);
             }
+
+            // FIFO: if someone is queued for this book, auto-claim the freed copy for them
+            $queuedReservation = DB::table('book_requests')
+                ->where('book_id', $bookRequest->book_id)
+                ->where('type', 'reserve')
+                ->where('status', 'approved')
+                ->orderBy('request_date')
+                ->first();
+
+            if ($queuedReservation) {
+                DB::table('books')->where('id', $bookRequest->book_id)->decrement('available_copies');
+
+                DB::table('book_requests')->where('id', $queuedReservation->id)->update([
+                    'status' => 'fulfilled',
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('book_requests')->insert([
+                    'member_id' => $queuedReservation->member_id,
+                    'book_id' => $bookRequest->book_id,
+                    'type' => 'issue',
+                    'status' => 'approved',
+                    'request_date' => now(),
+                    'issue_date' => now(),
+                    'due_date' => now()->addDays(30),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        } elseif ($bookRequest->type === 'reserve') {
+            DB::table('book_requests')->where('id', $id)->update([
+                'status' => 'approved',
+                'updated_at' => now(),
+            ]);
         }
 
         return back()->with('success', 'Request approved.');

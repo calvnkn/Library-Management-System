@@ -17,6 +17,20 @@ class MemberBookRequestController extends Controller
             ->orderByDesc('book_requests.created_at')
             ->get();
 
+        foreach ($requests as $r) {
+            if ($r->type === 'reserve' && $r->status === 'approved') {
+                $position = DB::table('book_requests')
+                    ->where('book_id', $r->book_id)
+                    ->where('type', 'reserve')
+                    ->where('status', 'approved')
+                    ->where('request_date', '<', $r->request_date)
+                    ->count();
+                $r->queue_position = $position + 1;
+            } else {
+                $r->queue_position = null;
+            }
+        }
+
         return view('member.my-books', compact('requests'));
     }
 
@@ -94,5 +108,42 @@ class MemberBookRequestController extends Controller
         ]);
 
         return redirect()->route('member.myBooks')->with('success', 'Return request submitted.');
+    }
+
+    public function requestReserve($bookId)
+    {
+        $memberId = session('member_id');
+        $book = DB::table('books')->where('id', $bookId)->first();
+
+        if (!$book) {
+            abort(404);
+        }
+
+        if ($book->available_copies > 0) {
+            return back()->with('error', 'Book is available — use Borrow instead of Reserve.');
+        }
+
+        $existing = DB::table('book_requests')
+            ->where('member_id', $memberId)
+            ->where('book_id', $bookId)
+            ->where('type', 'reserve')
+            ->whereIn('status', ['pending', 'approved'])
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'You already have a pending or active reservation for this book.');
+        }
+
+        DB::table('book_requests')->insert([
+            'member_id' => $memberId,
+            'book_id' => $bookId,
+            'type' => 'reserve',
+            'status' => 'pending',
+            'request_date' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('member.myBooks')->with('success', 'Reservation request submitted. Waiting for admin approval.');
     }
 }

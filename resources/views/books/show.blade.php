@@ -14,7 +14,11 @@
         <button type="submit" class="btn btn-primary">Borrow this Book</button>
     </form>
 @else
-    <p class="text-danger">No copies available right now. (Reservation coming in a later round.)</p>
+    <form method="POST" action="{{ route('books.reserve', $book->id) }}">
+        @csrf
+        <button type="submit" class="btn btn-warning">Reserve this Book</button>
+    </form>
+    <small class="text-muted">No copies available right now. Don't worry, you'll be queued.</small>
 @endif
 
 <a href="{{ route('books.index') }}" class="btn btn-link">Back to Catalog</a>

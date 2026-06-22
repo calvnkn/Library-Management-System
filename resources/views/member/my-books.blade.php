@@ -4,7 +4,17 @@
 <h3>My Books</h3>
 <table class="table table-bordered">
     <thead>
-        <tr><th>Title</th><th>Type</th><th>Status</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Fine</th><th></th></tr>
+        <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Queue #</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Return Date</th>
+            <th>Fine</th>
+            <th></th>
+        </tr>
     </thead>
     <tbody>
         @foreach ($requests as $r)
@@ -12,6 +22,7 @@
             <td>{{ $r->title }}</td>
             <td>{{ ucfirst($r->type) }}</td>
             <td>{{ ucfirst($r->status) }}</td>
+            <td>{{ $r->queue_position ?? '—' }}</td>
             <td>{{ $r->issue_date }}</td>
             <td>{{ $r->due_date }}</td>
             <td>{{ $r->return_date }}</td>
