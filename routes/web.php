@@ -1,13 +1,4 @@
 <?php
-/**
- * Expected schema (no migrations yet — build these tables when ready):
- *
- * admins:        id, name, email, password, created_at, updated_at
- * members:       id, name, email, address, contact_number, password, created_at, updated_at
- * books:         id, title, author, isbn, publication, category, total_copies, available_copies, created_at, updated_at
- * book_requests: id, member_id, book_id, type (issue|return|reserve), status (pending|approved|rejected|returned),
- *                request_date, issue_date, due_date, return_date, fine_amount, created_at, updated_at
- */
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\MemberAuthController;
