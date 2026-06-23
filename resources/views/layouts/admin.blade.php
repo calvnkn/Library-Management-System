@@ -16,6 +16,9 @@
                 <a class="btn btn-outline-light btn-sm me-2" href="{{ route('admin.requests.index') }}">Requests</a>
                 <a class="btn btn-outline-light btn-sm me-2" href="{{ route('admin.defaulters.index') }}">Defaulters</a>
                 <a class="btn btn-outline-light btn-sm me-2" href="{{ route('admin.fines.index') }}">Fines</a>
+                <a class="btn btn-outline-light btn-sm me-2" href="{{ route('admin.activityLog.index') }}">Activity Log</a>
+                <a class="btn btn-outline-light btn-sm me-2" href="{{ route('admin.users.index') }}">Manage Users</a>
+                <a class="btn btn-outline-light btn-sm me-2" href="{{ route('admin.issue.create') }}">Issue Book</a>
                 <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
                     @csrf
                     <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>

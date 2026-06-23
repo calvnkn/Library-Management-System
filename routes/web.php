@@ -9,6 +9,9 @@ use App\Http\Controllers\Admin\AdminBookController;
 use App\Http\Controllers\Admin\AdminRequestController;
 use App\Http\Controllers\Admin\AdminDefaulterController;
 use App\Http\Controllers\Admin\AdminFineController;
+use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\IssueController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -54,6 +57,14 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::post('/requests/{id}/approve', [AdminRequestController::class, 'approve'])->name('admin.requests.approve');
     Route::post('/requests/{id}/reject', [AdminRequestController::class, 'reject'])->name('admin.requests.reject');
 });
+
+Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('admin.activityLog.index');
+
+Route::get('/users', [MemberController::class, 'index'])->name('admin.users.index');
+Route::get('/users/{id}', [MemberController::class, 'show'])->name('admin.users.show');
+
+Route::get('/issue', [IssueController::class, 'create'])->name('admin.issue.create');
+Route::post('/issue', [IssueController::class, 'store'])->name('admin.issue.store');
 
 Route::get('/defaulters', [AdminDefaulterController::class, 'index'])->name('admin.defaulters.index');
 Route::get('/fines', [AdminFineController::class, 'index'])->name('admin.fines.index');
