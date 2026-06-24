@@ -24,6 +24,7 @@ Route::get('/login', [MemberAuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [MemberAuthController::class, 'login']);
 Route::post('/logout', [MemberAuthController::class, 'logout'])->name('logout');
 Route::post('/books/{id}/reserve', [MemberBookRequestController::class, 'requestReserve'])->name('books.reserve');
+Route::post('/my-books/{id}/renew', [MemberBookRequestController::class, 'renew'])->name('member.renew');
 
 // Member-only
 Route::middleware('member.auth')->group(function () {

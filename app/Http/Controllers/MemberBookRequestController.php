@@ -29,6 +29,12 @@ class MemberBookRequestController extends Controller
             } else {
                 $r->queue_position = null;
             }
+
+            $r->can_renew = $r->type === 'issue'
+                && $r->status === 'approved'
+                && !$r->renewed
+                && $r->due_date
+                && now()->isSameDay($r->due_date);
         }
 
         return view('member.my-books', compact('requests'));
@@ -108,6 +114,38 @@ class MemberBookRequestController extends Controller
         ]);
 
         return redirect()->route('member.myBooks')->with('success', 'Return request submitted.');
+    }
+
+    public function renew($id)
+    {
+        $memberId = session('member_id');
+
+        $bookRequest = DB::table('book_requests')
+            ->where('id', $id)
+            ->where('member_id', $memberId)
+            ->where('type', 'issue')
+            ->where('status', 'approved')
+            ->first();
+
+        if (!$bookRequest) {
+            return back()->with('error', 'No active issued book found.');
+        }
+
+        if (!$bookRequest->due_date || !now()->isSameDay($bookRequest->due_date)) {
+            return back()->with('error', 'You can only renew on the due date itself.');
+        }
+
+        if ($bookRequest->renewed) {
+            return back()->with('error', 'This book has already been renewed once.');
+        }
+
+        DB::table('book_requests')->where('id', $id)->update([
+            'due_date' => now()->addDays(30),
+            'renewed' => 1,
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Book renewed. New due date pushed 30 days.');
     }
 
     public function requestReserve($bookId)

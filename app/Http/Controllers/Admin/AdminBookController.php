@@ -37,7 +37,7 @@ class AdminBookController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'isbn' => 'required|string|max:50',
+            'isbn' => 'required|string|max:50|unique:books,isbn',
             'publication' => 'nullable|string|max:255',
             'category' => 'required|string|max:100',
             'total_copies' => 'required|integer|min:1',
@@ -80,7 +80,7 @@ class AdminBookController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'isbn' => 'required|string|max:50',
+            'isbn' => 'required|string|max:50|unique:books,isbn,' . $id,
             'publication' => 'nullable|string|max:255',
             'category' => 'required|string|max:100',
             'total_copies' => 'required|integer|min:1',

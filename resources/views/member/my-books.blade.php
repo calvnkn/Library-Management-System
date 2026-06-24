@@ -29,10 +29,16 @@
             <td>{{ $r->fine_amount }}</td>
             <td>
                 @if ($r->type === 'issue' && $r->status === 'approved')
-                <form method="POST" action="{{ route('member.requestReturn', $r->id) }}">
-                    @csrf
-                    <button class="btn btn-sm btn-warning" type="submit">Request Return</button>
-                </form>
+                    @if ($r->can_renew)
+                    <form method="POST" action="{{ route('member.renew', $r->id) }}" class="d-inline">
+                        @csrf
+                        <button class="btn btn-sm btn-info" type="submit">Renew</button>
+                    </form>
+                    @endif
+                    <form method="POST" action="{{ route('member.requestReturn', $r->id) }}" class="d-inline">
+                        @csrf
+                        <button class="btn btn-sm btn-warning" type="submit">Request Return</button>
+                    </form>
                 @endif
             </td>
         </tr>
