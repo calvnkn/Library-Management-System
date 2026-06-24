@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\IssueController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminProfileController;
+use App\Http\Controllers\Admin\IssuedBooksController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -64,6 +65,8 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
     Route::put('/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
     Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('admin.profile.password');
+    Route::get('/issued-books', [IssuedBooksController::class, 'index'])->name('admin.issuedBooks.index');
+    Route::get('/issued-books/{id}', [IssuedBooksController::class, 'show'])->name('admin.issuedBooks.show');
 });
 
 Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('admin.activityLog.index');
