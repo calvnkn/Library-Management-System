@@ -12,6 +12,7 @@
         <div class="d-flex">
             <a class="btn btn-outline-light btn-sm me-2" href="{{ route('books.index') }}">Catalog</a>
             <a class="btn btn-outline-light btn-sm me-2" href="{{ route('member.myBooks') }}">My Books</a>
+            <a class="btn btn-outline-light btn-sm me-2" href="{{ route('profile.edit') }}">My Profile</a>
             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                 @csrf
                 <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>

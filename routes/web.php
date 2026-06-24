@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\AdminFineController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\IssueController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\AdminProfileController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -25,6 +27,9 @@ Route::post('/login', [MemberAuthController::class, 'login']);
 Route::post('/logout', [MemberAuthController::class, 'logout'])->name('logout');
 Route::post('/books/{id}/reserve', [MemberBookRequestController::class, 'requestReserve'])->name('books.reserve');
 Route::post('/my-books/{id}/renew', [MemberBookRequestController::class, 'renew'])->name('member.renew');
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
 // Member-only
 Route::middleware('member.auth')->group(function () {
@@ -53,10 +58,12 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/books/{id}/edit', [AdminBookController::class, 'edit'])->name('admin.books.edit');
     Route::put('/books/{id}', [AdminBookController::class, 'update'])->name('admin.books.update');
     Route::delete('/books/{id}', [AdminBookController::class, 'destroy'])->name('admin.books.destroy');
-
     Route::get('/requests', [AdminRequestController::class, 'index'])->name('admin.requests.index');
     Route::post('/requests/{id}/approve', [AdminRequestController::class, 'approve'])->name('admin.requests.approve');
     Route::post('/requests/{id}/reject', [AdminRequestController::class, 'reject'])->name('admin.requests.reject');
+    Route::get('/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
+    Route::put('/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
+    Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('admin.profile.password');
 });
 
 Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('admin.activityLog.index');
