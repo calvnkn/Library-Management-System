@@ -40,6 +40,13 @@ Route::middleware('member.auth')->group(function () {
     Route::post('/books/{id}/issue', [MemberBookRequestController::class, 'requestIssue'])->name('books.issue');
     Route::get('/my-books', [MemberBookRequestController::class, 'index'])->name('member.myBooks');
     Route::post('/my-books/{id}/return', [MemberBookRequestController::class, 'requestReturn'])->name('member.requestReturn');
+    Route::get('/notifications/unread-count', function () {
+    $count = \Illuminate\Support\Facades\DB::table('member_notifications')
+        ->where('member_id', session('member_id'))
+        ->where('read', false)
+        ->count();
+    return response()->json(['count' => $count]);
+})->name('member.notifications.unreadCount');
 });
 
 // Admin auth
@@ -50,9 +57,11 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 // Admin-only
 Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-
+        return view('admin.dashboard');})
+    ->name('admin.dashboard');
+        
+    Route::post('/issued-books/{id}/mark-lost', [AdminRequestController::class, 'markLost'])->name('admin.issuedBooks.markLost');
+    
     Route::get('/books', [AdminBookController::class, 'index'])->name('admin.books.index');
     Route::get('/books/create', [AdminBookController::class, 'create'])->name('admin.books.create');
     Route::post('/books', [AdminBookController::class, 'store'])->name('admin.books.store');

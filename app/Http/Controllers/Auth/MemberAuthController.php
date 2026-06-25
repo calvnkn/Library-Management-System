@@ -25,13 +25,10 @@ class MemberAuthController extends Controller
             'contact_number' => 'required|string|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|max:20',
             'password' => 'required|string|min:6|confirmed',
         ]);
-
         $existing = DB::table('members')->where('email', $validated['email'])->first();
-
         if ($existing) {
             return back()->withErrors(['email' => 'Email is already registered.'])->withInput();
         }
-
         DB::table('members')->insert([
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'] ?? null,
@@ -43,7 +40,6 @@ class MemberAuthController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
         return redirect()->route('login')->with('success', 'Registration successful. You may now log in.');
     }
 
@@ -58,18 +54,14 @@ class MemberAuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
-
         $member = DB::table('members')->where('email', $credentials['email'])->first();
-
         if (!$member || !Hash::check($credentials['password'], $member->password)) {
             return back()->withErrors(['email' => 'Invalid email or password.'])->withInput();
         }
-
         session([
             'member_id' => $member->id,
             'member_name' => trim(implode(' ', array_filter([$member->first_name, $member->middle_name, $member->last_name]))),
         ]);
-
         return redirect()->route('books.index');
     }
 

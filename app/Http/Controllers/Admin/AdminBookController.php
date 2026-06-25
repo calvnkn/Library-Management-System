@@ -3,9 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Switched from DB::table('books') to the Book Eloquent model so that
+ * the Book::updated() observer fires and auto-fulfils reservations
+ * whenever available_copies increases through an admin book edit.
+ */
 class AdminBookController extends Controller
 {
     public function index(Request $request)
@@ -35,30 +41,30 @@ class AdminBookController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'isbn' => 'required|string|max:50|unique:books,isbn',
-            'publication' => 'nullable|string|max:255',
-            'category' => 'required|string|max:100',
+            'title'        => 'required|string|max:255',
+            'author'       => 'required|string|max:255',
+            'isbn'         => 'required|string|max:50|unique:books,isbn',
+            'publication'  => 'nullable|string|max:255',
+            'category'     => 'required|string|max:100',
             'total_copies' => 'required|integer|min:1',
+            'replacement_price' => 'nullable|numeric|min:0',
         ]);
 
-        DB::table('books')->insert([
-            'title' => $validated['title'],
-            'author' => $validated['author'],
-            'isbn' => $validated['isbn'],
-            'publication' => $validated['publication'] ?? null,
-            'category' => $validated['category'],
-            'total_copies' => $validated['total_copies'],
+        Book::create([
+            'title'            => $validated['title'],
+            'author'           => $validated['author'],
+            'isbn'             => $validated['isbn'],
+            'publication'      => $validated['publication'] ?? null,
+            'category'         => $validated['category'],
+            'total_copies'     => $validated['total_copies'],
             'available_copies' => $validated['total_copies'],
-            'created_at' => now(),
-            'updated_at' => now(),
+            'replacement_price' => $validated['replacement_price'] ?? 0,
         ]);
 
         return redirect()->route('admin.books.index')->with('success', 'Book added.');
     }
 
-    public function edit($id)
+    public function edit(int $id)
     {
         $book = DB::table('books')->where('id', $id)->first();
 
@@ -69,42 +75,38 @@ class AdminBookController extends Controller
         return view('admin.books.edit', compact('book'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
-        $book = DB::table('books')->where('id', $id)->first();
-
-        if (!$book) {
-            abort(404);
-        }
+        $book = Book::findOrFail($id);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'isbn' => 'required|string|max:50|unique:books,isbn,' . $id,
-            'publication' => 'nullable|string|max:255',
-            'category' => 'required|string|max:100',
+            'title'        => 'required|string|max:255',
+            'author'       => 'required|string|max:255',
+            'isbn'         => 'required|string|max:50|unique:books,isbn,' . $id,
+            'publication'  => 'nullable|string|max:255',
+            'category'     => 'required|string|max:100',
             'total_copies' => 'required|integer|min:1',
         ]);
 
-        // Keep available_copies consistent if total_copies changes
-        $issuedCount = $book->total_copies - $book->available_copies;
+        // Recalculate available copies the same way as before
+        $issuedCount  = $book->total_copies - $book->available_copies;
         $newAvailable = max(0, $validated['total_copies'] - $issuedCount);
 
-        DB::table('books')->where('id', $id)->update([
-            'title' => $validated['title'],
-            'author' => $validated['author'],
-            'isbn' => $validated['isbn'],
-            'publication' => $validated['publication'] ?? null,
-            'category' => $validated['category'],
-            'total_copies' => $validated['total_copies'],
+        // Using fill() + save() so Eloquent fires the updated event (and thus the observer)
+        $book->fill([
+            'title'            => $validated['title'],
+            'author'           => $validated['author'],
+            'isbn'             => $validated['isbn'],
+            'publication'      => $validated['publication'] ?? null,
+            'category'         => $validated['category'],
+            'total_copies'     => $validated['total_copies'],
             'available_copies' => $newAvailable,
-            'updated_at' => now(),
-        ]);
+        ])->save();
 
         return redirect()->route('admin.books.index')->with('success', 'Book updated.');
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         DB::table('books')->where('id', $id)->delete();
 
