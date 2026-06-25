@@ -20,9 +20,7 @@
                     <b>USER PENALTIES</b>
                 </div>
                 <div class="card-body d-flex flex-column">
-                    <p class="card-text fw-light">No. Users w/ Penalties: </p>
-                    <p class="card-text fw-light">Late Returns: </p>
-                    <p class="card-text fw-light">Lost Books: </p>
+                    <p class="card-text fw-light"> Reported Penalties and Fines </p>
                     <div class="container">
                         <a class="btn btn-danger " href="{{ route('admin.defaulters.index') }}">Defaulters</a>
                         <a class="btn btn-danger " href="{{ route('admin.fines.index') }}">Fines</a>
@@ -36,7 +34,7 @@
                     <b>PENDING REQUESTS</b>
                 </div>
                 <div class="card-body d-flex flex-column">
-                    <p class="card-text fw-light">No. of Total Requests: </p>
+                    <p class="card-text fw-light">User Requests </p>
                     <div class="container">
                         <a class="btn btn-secondary " href="{{ route('admin.requests.index') }}">Manage</a>
                     </div>

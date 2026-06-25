@@ -1,17 +1,29 @@
 @extends('layouts.admin')
+
 @section('title', 'Member Profile')
+
 @section('content')
 <h3>{{ trim("{$member->first_name} {$member->middle_name} {$member->last_name}") }}</h3>
+
 <p><strong>Email:</strong> {{ $member->email }}</p>
 <p><strong>Address:</strong> {{ $member->address }}</p>
 <p><strong>Contact Number:</strong> {{ $member->contact_number }}</p>
-<p><strong>Unpaid Fines Total:</strong> ₱{{ $unpaidFines }}</p>
+<p><strong>Unpaid Fines Total:</strong> ₱{{ number_format($unpaidFines, 2) }}</p>
 
 <h5 class="mt-4">Request History</h5>
+
 <table class="table table-bordered">
     <thead>
-        <tr><th>Book</th><th>Type</th><th>Status</th><th>Due Date</th><th>Return Date</th><th>Fine</th></tr>
+        <tr>
+            <th>Book</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Due Date</th>
+            <th>Return Date</th>
+            <th>Fine</th>
+        </tr>
     </thead>
+
     <tbody>
         @forelse ($requests as $r)
         <tr>
@@ -20,10 +32,30 @@
             <td>{{ ucfirst($r->status) }}</td>
             <td>{{ $r->due_date }}</td>
             <td>{{ $r->return_date }}</td>
-            <td>₱{{ $r->fine_amount + $r->lost_fine_amount }}</td>
+
+            <td>
+                @php
+                    $fine = ($r->fine_amount ?? 0) + ($r->lost_fine_amount ?? 0);
+
+                    if (
+                        $r->type === 'issue' &&
+                        $r->status === 'approved' &&
+                        $r->due_date &&
+                        \Carbon\Carbon::parse($r->due_date)->startOfDay()->lt(now()->startOfDay())
+                    ) {
+                        $fine += \Carbon\Carbon::parse($r->due_date)
+                            ->startOfDay()
+                            ->diffInDays(now()->startOfDay()) * 5;
+                    }
+                @endphp
+
+                ₱{{ number_format($fine, 2) }}
+            </td>
         </tr>
         @empty
-        <tr><td colspan="6" class="text-center">No requests yet.</td></tr>
+        <tr>
+            <td colspan="6" class="text-center">No requests yet.</td>
+        </tr>
         @endforelse
     </tbody>
 </table>

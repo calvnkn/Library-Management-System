@@ -11,7 +11,9 @@ class MemberController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+
         $query = DB::table('members');
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
@@ -19,7 +21,9 @@ class MemberController extends Controller
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
+
         $members = $query->orderBy('first_name')->get();
+
         return view('admin.users.index', compact('members', 'search'));
     }
 
@@ -38,17 +42,24 @@ class MemberController extends Controller
             ->orderByDesc('book_requests.created_at')
             ->get();
 
-        $unpaidLateFines = DB::table('book_requests')
-            ->where('member_id', $id)
-            ->where('fine_status', 'unpaid')
-            ->sum('fine_amount');
+        $unpaidFines = 0;
 
-        $unpaidLostFines = DB::table('book_requests')
-            ->where('member_id', $id)
-            ->where('fine_status', 'unpaid')
-            ->sum('lost_fine_amount');
+        foreach ($requests as $r) {
+            $fine = ($r->fine_amount ?? 0) + ($r->lost_fine_amount ?? 0);
 
-        $unpaidFines = $unpaidLateFines + $unpaidLostFines;
+            if (
+                $r->type === 'issue' &&
+                $r->status === 'approved' &&
+                $r->due_date &&
+                \Carbon\Carbon::parse($r->due_date)->startOfDay()->lt(now()->startOfDay())
+            ) {
+                $fine += \Carbon\Carbon::parse($r->due_date)
+                    ->startOfDay()
+                    ->diffInDays(now()->startOfDay()) * 5;
+            }
+
+            $unpaidFines += $fine;
+        }
 
         return view('admin.users.show', compact('member', 'requests', 'unpaidFines'));
     }
