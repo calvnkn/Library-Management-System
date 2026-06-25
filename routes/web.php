@@ -59,8 +59,6 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('admin.dashboard');})
     ->name('admin.dashboard');
-        
-    Route::post('/issued-books/{id}/mark-lost', [AdminRequestController::class, 'markLost'])->name('admin.issuedBooks.markLost');
     
     Route::get('/books', [AdminBookController::class, 'index'])->name('admin.books.index');
     Route::get('/books/create', [AdminBookController::class, 'create'])->name('admin.books.create');
@@ -71,6 +69,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/requests', [AdminRequestController::class, 'index'])->name('admin.requests.index');
     Route::post('/requests/{id}/approve', [AdminRequestController::class, 'approve'])->name('admin.requests.approve');
     Route::post('/requests/{id}/reject', [AdminRequestController::class, 'reject'])->name('admin.requests.reject');
+    Route::post('/issued-books/{id}/mark-lost', [AdminRequestController::class, 'markLost'])->name('admin.issuedBooks.markLost');
     Route::get('/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
     Route::put('/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
     Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('admin.profile.password');
