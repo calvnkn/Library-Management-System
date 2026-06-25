@@ -3,12 +3,13 @@
 @section('content')
 <h3>Book Catalog</h3>
 
+
 <form method="GET" action="{{ route('books.index') }}" class="row g-2 mb-4">
     <div class="col-auto">
         <select name="search_by" class="form-select">
-            <option value="title" @selected($searchBy=='title')>Title</option>
-            <option value="author" @selected($searchBy=='author')>Author</option>
-            <option value="id" @selected($searchBy=='id')>Book ID</option>
+            <option value="title" @selected($searchBy=='title' )>Title</option>
+            <option value="author" @selected($searchBy=='author' )>Author</option>
+            <option value="id" @selected($searchBy=='id' )>Book ID</option>
         </select>
     </div>
     <div class="col-auto">
@@ -21,7 +22,13 @@
 
 <table class="table table-bordered">
     <thead>
-        <tr><th>Title</th><th>Author</th><th>Category</th><th>Available</th><th></th></tr>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Available</th>
+            <th></th>
+        </tr>
     </thead>
     <tbody>
         @foreach ($books as $book)
