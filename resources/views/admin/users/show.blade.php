@@ -20,7 +20,7 @@
             <td>{{ ucfirst($r->status) }}</td>
             <td>{{ $r->due_date }}</td>
             <td>{{ $r->return_date }}</td>
-            <td>{{ $r->fine_amount }}</td>
+            <td>₱{{ $r->fine_amount + $r->lost_fine_amount }}</td>
         </tr>
         @empty
         <tr><td colspan="6" class="text-center">No requests yet.</td></tr>

@@ -7,11 +7,6 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Switched from DB::table('books') to the Book Eloquent model so that
- * the Book::updated() observer fires and auto-fulfils reservations
- * whenever available_copies increases through an admin book edit.
- */
 class AdminBookController extends Controller
 {
     public function index(Request $request)
@@ -23,8 +18,8 @@ class AdminBookController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('author', 'like', "%{$search}%")
-                  ->orWhere('isbn', 'like', "%{$search}%");
+                    ->orWhere('author', 'like', "%{$search}%")
+                    ->orWhere('isbn', 'like', "%{$search}%");
             });
         }
 
@@ -58,7 +53,7 @@ class AdminBookController extends Controller
             'category'         => $validated['category'],
             'total_copies'     => $validated['total_copies'],
             'available_copies' => $validated['total_copies'],
-            'replacement_price' => $validated['replacement_price'] ?? 0,
+            'replacement_price' => $validated['replacement_price'] ?? null,
         ]);
 
         return redirect()->route('admin.books.index')->with('success', 'Book added.');
@@ -85,7 +80,8 @@ class AdminBookController extends Controller
             'isbn'         => 'required|string|max:50|unique:books,isbn,' . $id,
             'publication'  => 'nullable|string|max:255',
             'category'     => 'required|string|max:100',
-            'total_copies' => 'required|integer|min:1',
+            'total_copies' => 'required|integer|min:0',
+            'replacement_price' => 'nullable|numeric|min:0',
         ]);
 
         // Recalculate available copies the same way as before
@@ -101,6 +97,7 @@ class AdminBookController extends Controller
             'category'         => $validated['category'],
             'total_copies'     => $validated['total_copies'],
             'available_copies' => $newAvailable,
+            'replacement_price' => $validated['replacement_price'] ?? null,
         ])->save();
 
         return redirect()->route('admin.books.index')->with('success', 'Book updated.');
