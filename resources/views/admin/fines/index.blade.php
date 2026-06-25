@@ -1,11 +1,22 @@
 @extends('layouts.admin')
 @section('title', 'User Fines')
 @section('content')
+<div class="mb-3">
+    <a href="{{ route('admin.dashboard') }}" class="btn btn-primary"> Dashboard
+    </a>
+</div>
 <h3>User Fines</h3>
 
 <table class="table table-bordered">
     <thead>
-        <tr><th>Member</th><th>Book</th><th>Return Date</th><th>Fine Amount</th><th>Status</th><th></th></tr>
+        <tr>
+            <th>Member</th>
+            <th>Book</th>
+            <th>Return Date</th>
+            <th>Fine Amount</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
     </thead>
     <tbody>
         @forelse ($fines as $f)
@@ -29,7 +40,9 @@
             </td>
         </tr>
         @empty
-        <tr><td colspan="6" class="text-center">No fines on record.</td></tr>
+        <tr>
+            <td colspan="6" class="text-center">No fines on record.</td>
+        </tr>
         @endforelse
     </tbody>
 </table>
