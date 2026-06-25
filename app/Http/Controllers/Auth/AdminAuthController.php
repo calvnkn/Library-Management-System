@@ -28,8 +28,8 @@ class AdminAuthController extends Controller
         }
 
         session([
-            'admin_id' => $admin->id,
-            'admin_name' => $admin->name,
+            'admin_id'   => $admin->id,
+            'admin_name' => $admin->first_name . ' ' . $admin->last_name,
         ]);
 
         return redirect()->route('admin.dashboard');

@@ -22,3 +22,9 @@
     <label class="form-label">Total Copies</label>
     <input type="number" name="total_copies" class="form-control" value="{{ old('total_copies', $book->total_copies ?? 1) }}">
 </div>
+<div class="mb-3">
+    <label class="form-label">Replacement Price (₱)</label>
+    <input type="number" step="0.01" min="0" name="replacement_price"
+           class="form-control" value="{{ old('replacement_price', $book->replacement_price ?? 0) }}">
+    <div class="form-text">Used to calculate the fine if this book is reported lost.</div>
+</div>

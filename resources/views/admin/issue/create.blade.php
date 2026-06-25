@@ -10,7 +10,7 @@
         <select name="member_id" class="form-select" required>
             <option value="">-- Select Member --</option>
             @foreach ($members as $member)
-            <option value="{{ $member->id }}">{{ $member->name }} ({{ $member->email }})</option>
+            <option value="{{ $member->id }}">{{ $member->first_name }} {{ $member->last_name }} ({{ $member->email }})</option>
             @endforeach
         </select>
     </div>

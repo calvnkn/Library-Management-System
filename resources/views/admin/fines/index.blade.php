@@ -33,4 +33,41 @@
         @endforelse
     </tbody>
 </table>
+
+<h5 class="mt-4">Lost Book Fines</h5>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Book</th>
+            <th>Fine</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($lostFines as $lf)
+        <tr>
+            <td>{{ $lf->member_name }}</td>
+            <td>{{ $lf->title }}</td>
+            <td>₱{{ number_format($lf->lost_fine_amount, 2) }}</td>
+            <td>
+                <span class="badge bg-{{ $lf->fine_status === 'resolved' ? 'success' : 'danger' }}">
+                    {{ ucfirst($lf->fine_status) }}
+                </span>
+            </td>
+            <td>
+                @if ($lf->fine_status !== 'resolved')
+                <form action="{{ route('admin.fines.resolve', $lf->id) }}" method="POST">
+                    @csrf
+                    <button class="btn btn-sm btn-success">Mark Resolved</button>
+                </form>
+                @else
+                    —
+                @endif
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
 @endsection

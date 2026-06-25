@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Member Profile')
 @section('content')
-<h3>{{ $member->name }}</h3>
+<h3>{{ $member->first_name }} {{ $member->last_name }}</h3>
 <p><strong>Email:</strong> {{ $member->email }}</p>
 <p><strong>Address:</strong> {{ $member->address }}</p>
 <p><strong>Contact Number:</strong> {{ $member->contact_number }}</p>

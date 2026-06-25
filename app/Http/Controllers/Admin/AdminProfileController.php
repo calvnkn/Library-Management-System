@@ -19,20 +19,21 @@ class AdminProfileController extends Controller
     public function update(Request $request)
     {
         $adminId = session('admin_id');
-
+    
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:admins,email,' . $adminId,
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email|max:255|unique:admins,email,' . $adminId,
         ]);
 
         DB::table('admins')->where('id', $adminId)->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+            'first_name' => $validated['first_name'],
+            'last_name'  => $validated['last_name'],
+            'email'      => $validated['email'],
             'updated_at' => now(),
         ]);
 
-        session(['admin_name' => $validated['name']]);
-
+        session(['admin_name' => $validated['first_name'] . ' ' . $validated['last_name']]);
         return back()->with('success', 'Profile updated.');
     }
 

@@ -14,7 +14,7 @@
     <tbody>
         @forelse ($members as $member)
         <tr>
-            <td>{{ $member->name }}</td>
+            <td>{{ $member->first_name }} {{ $member->last_name }}</td>
             <td>{{ $member->email }}</td>
             <td>{{ $member->contact_number }}</td>
             <td><a href="{{ route('admin.users.show', $member->id) }}" class="btn btn-sm btn-secondary">View</a></td>

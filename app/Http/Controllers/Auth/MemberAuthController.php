@@ -17,11 +17,12 @@ class MemberAuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'address' => 'nullable|string|max:255',
+            'first_name'     => 'required|string|max:255',
+            'last_name'      => 'required|string|max:255',
+            'email'          => 'required|email|max:255',
+            'address'        => 'nullable|string|max:255',
             'contact_number' => 'nullable|string|max:20',
-            'password' => 'required|string|min:6|confirmed',
+            'password'       => 'required|string|min:6|confirmed',
         ]);
 
         $existing = DB::table('members')->where('email', $validated['email'])->first();
@@ -31,13 +32,14 @@ class MemberAuthController extends Controller
         }
 
         DB::table('members')->insert([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'address' => $validated['address'] ?? null,
+            'first_name'     => $validated['first_name'],
+            'last_name'      => $validated['last_name'],
+            'email'          => $validated['email'],
+            'address'        => $validated['address'] ?? null,
             'contact_number' => $validated['contact_number'] ?? null,
-            'password' => Hash::make($validated['password']),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'password'       => Hash::make($validated['password']),
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ]);
 
         return redirect()->route('login')->with('success', 'Registration successful. You may now log in.');
@@ -62,8 +64,8 @@ class MemberAuthController extends Controller
         }
 
         session([
-            'member_id' => $member->id,
-            'member_name' => $member->name,
+            'member_id'   => $member->id,
+            'member_name' => $member->first_name . ' ' . $member->last_name,
         ]);
 
         return redirect()->route('books.index');
