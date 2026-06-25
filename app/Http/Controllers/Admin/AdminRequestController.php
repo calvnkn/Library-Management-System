@@ -15,7 +15,7 @@ class AdminRequestController extends Controller
             ->join('members', 'members.id', '=', 'book_requests.member_id')
             ->where('book_requests.status', 'pending')
             ->select('book_requests.*', 'books.title', 'books.available_copies',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"))
+                DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"))
             ->orderBy('book_requests.created_at')
             ->get();
 
@@ -74,7 +74,7 @@ class AdminRequestController extends Controller
                 'status'      => 'approved',
                 'return_date' => now(),
                 'fine_amount' => $fine,
-                'fine_status' => $fine > 0 ? 'unpaid' : 'paid',
+                'fine_status' => $fine > 0 ? 'unpaid' : 'resolved',
                 'updated_at'  => now(),
             ]);
 
@@ -96,7 +96,6 @@ class AdminRequestController extends Controller
                 "Your return of \"{$book->title}\" has been processed.{$fineMsg}"
             );
 
-            // FIFO auto-fulfill — now delegated to the service so it works from any trigger
             NotificationService::fulfillNextReservation($bookRequest->book_id);
 
         } elseif ($bookRequest->type === 'reserve') {
@@ -146,10 +145,6 @@ class AdminRequestController extends Controller
         return back()->with('success', 'Request rejected.');
     }
 
-    /**
-     * Mark a book as lost and apply a flat fine.
-     * Called from the issued-books detail page.
-     */
     public function markLost(int $id)
     {
         $issueRecord = DB::table('book_requests')
@@ -164,7 +159,6 @@ class AdminRequestController extends Controller
 
         $book = DB::table('books')->where('id', $issueRecord->book_id)->first();
 
-        // Use the book's replacement price; fall back to 0 if not set
         $lostFine = $book->replacement_price ?? 0;
 
         DB::table('book_requests')->where('id', $id)->update([

@@ -15,17 +15,13 @@ class AdminDefaulterController extends Controller
             ->where('book_requests.type', 'issue')
             ->where('book_requests.status', 'approved')
             ->where('book_requests.due_date', '<', now())
-            ->select('book_requests.*', 'books.title',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"),
-                'members.email as member_email')
+            ->select('book_requests.*', 'books.title', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"), 'members.email as member_email')
             ->orderBy('book_requests.due_date')
             ->get();
-
         foreach ($defaulters as $d) {
             $d->days_overdue = now()->diffInDays($d->due_date);
             $d->projected_fine = $d->days_overdue * 5;
         }
-
         return view('admin.defaulters.index', compact('defaulters'));
     }
 }

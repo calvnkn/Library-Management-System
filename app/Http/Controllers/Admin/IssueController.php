@@ -12,16 +12,14 @@ class IssueController extends Controller
     {
         $memberSearch = $request->query('member_search');
         $bookSearch = $request->query('book_search');
-
         $members = DB::table('members')
             ->when($memberSearch, function ($q) use ($memberSearch) {
                 $q->where('first_name', 'like', "%{$memberSearch}%")
-                ->orWhere('last_name', 'like', "%{$memberSearch}%")
-                ->orWhere('email', 'like', "%{$memberSearch}%");
+                    ->orWhere('last_name', 'like', "%{$memberSearch}%")
+                    ->orWhere('email', 'like', "%{$memberSearch}%");
             })
             ->orderBy('first_name')
             ->get();
-
         $books = DB::table('books')
             ->where('available_copies', '>', 0)
             ->when($bookSearch, function ($q) use ($bookSearch) {
@@ -29,7 +27,6 @@ class IssueController extends Controller
             })
             ->orderBy('title')
             ->get();
-
         return view('admin.issue.create', compact('members', 'books', 'memberSearch', 'bookSearch'));
     }
 
@@ -39,31 +36,24 @@ class IssueController extends Controller
             'member_id' => 'required|integer',
             'book_id' => 'required|integer',
         ]);
-
         $member = DB::table('members')->where('id', $validated['member_id'])->first();
         $book = DB::table('books')->where('id', $validated['book_id'])->first();
-
         if (!$member || !$book) {
             return back()->with('error', 'Member or book not found.');
         }
-
         if ($book->available_copies < 1) {
             return back()->with('error', 'No available copies left for this book.');
         }
-
         $existing = DB::table('book_requests')
             ->where('member_id', $member->id)
             ->where('book_id', $book->id)
             ->where('type', 'issue')
             ->where('status', 'approved')
             ->first();
-
         if ($existing) {
             return back()->with('error', 'This member already has this book issued.');
         }
-
         DB::table('books')->where('id', $book->id)->decrement('available_copies');
-
         DB::table('book_requests')->insert([
             'member_id' => $member->id,
             'book_id' => $book->id,
@@ -75,7 +65,6 @@ class IssueController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
         return redirect()->route('admin.issue.create')->with('success', "Book '{$book->title}' issued directly to {$member->first_name} {$member->last_name}.");
     }
 }

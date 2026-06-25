@@ -20,18 +20,14 @@ class AdminAuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
-
         $admin = DB::table('admins')->where('email', $credentials['email'])->first();
-
         if (!$admin || !Hash::check($credentials['password'], $admin->password)) {
             return back()->withErrors(['email' => 'Invalid email or password.'])->withInput();
         }
-
         session([
-            'admin_id'   => $admin->id,
-            'admin_name' => $admin->first_name . ' ' . $admin->last_name,
+            'admin_id' => $admin->id,
+            'admin_name' => trim(implode(' ', array_filter([$admin->first_name, $admin->middle_name, $admin->last_name]))),
         ]);
-
         return redirect()->route('admin.dashboard');
     }
 
