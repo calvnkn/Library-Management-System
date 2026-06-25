@@ -22,7 +22,7 @@ class MemberAuthController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'address' => 'nullable|string|max:255',
-            'contact_number' => 'nullable|string|max:20',
+            'contact_number' => 'required|string|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|max:20',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -38,7 +38,7 @@ class MemberAuthController extends Controller
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'address' => $validated['address'] ?? null,
-            'contact_number' => $validated['contact_number'] ?? null,
+            'contact_number' => $validated['contact_number'],
             'password' => Hash::make($validated['password']),
             'created_at' => now(),
             'updated_at' => now(),
