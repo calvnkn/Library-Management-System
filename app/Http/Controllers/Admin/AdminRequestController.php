@@ -13,7 +13,7 @@ class AdminRequestController extends Controller
             ->join('books', 'books.id', '=', 'book_requests.book_id')
             ->join('members', 'members.id', '=', 'book_requests.member_id')
             ->where('book_requests.status', 'pending')
-            ->select('book_requests.*', 'books.title', 'books.available_copies', 'members.name as member_name')
+            ->select('book_requests.*', 'books.title', 'books.available_copies', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"))
             ->orderBy('book_requests.created_at')
             ->get();
 
