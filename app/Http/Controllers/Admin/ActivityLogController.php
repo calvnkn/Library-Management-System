@@ -16,7 +16,7 @@ class ActivityLogController extends Controller
             ->join('books', 'books.id', '=', 'book_requests.book_id')
             ->join('members', 'members.id', '=', 'book_requests.member_id')
             ->whereIn('book_requests.status', ['approved', 'returned', 'rejected', 'fulfilled'])
-            ->select('book_requests.*', 'books.title', 'members.name as member_name');
+            ->select('book_requests.*', 'books.title', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"));
 
         if ($type) {
             $query->where('book_requests.type', $type);

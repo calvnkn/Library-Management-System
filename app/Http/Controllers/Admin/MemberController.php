@@ -16,12 +16,13 @@ class MemberController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
-        $members = $query->orderBy('name')->get();
+        $members = $query->orderBy('first_name')->get();
 
         return view('admin.users.index', compact('members', 'search'));
     }

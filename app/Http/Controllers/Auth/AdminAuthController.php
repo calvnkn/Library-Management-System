@@ -29,8 +29,8 @@ class AdminAuthController extends Controller
 
         session([
             'admin_id' => $admin->id,
-            'admin_name' => $admin->name,
-        ]);
+            'admin_name' => trim(implode(' ', array_filter([$admin->first_name, $admin->middle_name, $admin->last_name]))),
+        ]); // implode('', ...) joins array values together into one string, using a space between each value
 
         return redirect()->route('admin.dashboard');
     }

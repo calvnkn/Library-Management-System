@@ -20,21 +20,25 @@ class ProfileController extends Controller
         $memberId = session('member_id');
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:members,email,' . $memberId,
             'address' => 'nullable|string|max:255',
             'contact_number' => 'nullable|string|max:20',
         ]);
 
         DB::table('members')->where('id', $memberId)->update([
-            'name' => $validated['name'],
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'address' => $validated['address'] ?? null,
             'contact_number' => $validated['contact_number'] ?? null,
             'updated_at' => now(),
         ]);
 
-        session(['member_name' => $validated['name']]);
+        session(['member_name' => trim(implode(' ', array_filter([$validated['first_name'], $validated['middle_name'] ?? null, $validated['last_name']])))]);
 
         return back()->with('success', 'Profile updated.');
     }
