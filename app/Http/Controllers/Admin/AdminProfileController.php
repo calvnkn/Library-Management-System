@@ -21,17 +21,21 @@ class AdminProfileController extends Controller
         $adminId = session('admin_id');
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:admins,email,' . $adminId,
         ]);
 
         DB::table('admins')->where('id', $adminId)->update([
-            'name' => $validated['name'],
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'updated_at' => now(),
         ]);
 
-        session(['admin_name' => $validated['name']]);
+        session(['admin_name' => trim(implode(' ', array_filter([$validated['first_name'], $validated['middle_name'] ?? null, $validated['last_name']])))]);
 
         return back()->with('success', 'Profile updated.');
     }

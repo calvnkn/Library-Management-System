@@ -17,7 +17,9 @@ class MemberAuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'address' => 'nullable|string|max:255',
             'contact_number' => 'required|string|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|max:20',
@@ -31,7 +33,9 @@ class MemberAuthController extends Controller
         }
 
         DB::table('members')->insert([
-            'name' => $validated['name'],
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'address' => $validated['address'] ?? null,
             'contact_number' => $validated['contact_number'],
@@ -63,7 +67,7 @@ class MemberAuthController extends Controller
 
         session([
             'member_id' => $member->id,
-            'member_name' => $member->name,
+            'member_name' => trim(implode(' ', array_filter([$member->first_name, $member->middle_name, $member->last_name]))),
         ]);
 
         return redirect()->route('books.index');

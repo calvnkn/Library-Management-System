@@ -15,10 +15,11 @@ class IssueController extends Controller
 
         $members = DB::table('members')
             ->when($memberSearch, function ($q) use ($memberSearch) {
-                $q->where('name', 'like', "%{$memberSearch}%")
-                  ->orWhere('email', 'like', "%{$memberSearch}%");
+                $q->where('first_name', 'like', "%{$memberSearch}%")
+                    ->orWhere('last_name', 'like', "%{$memberSearch}%")
+                    ->orWhere('email', 'like', "%{$memberSearch}%");
             })
-            ->orderBy('name')
+            ->orderBy('first_name')
             ->get();
 
         $books = DB::table('books')

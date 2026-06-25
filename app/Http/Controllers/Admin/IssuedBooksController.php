@@ -49,7 +49,7 @@ class IssuedBooksController extends Controller
             ->where('book_requests.book_id', $id)
             ->where('book_requests.type', 'issue')
             ->where('book_requests.status', 'approved')
-            ->select('book_requests.*', 'members.name as member_name', 'members.email as member_email')
+            ->select('book_requests.*', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"), 'members.email as member_email')
             ->orderBy('book_requests.due_date')
             ->get();
 
@@ -62,7 +62,7 @@ class IssuedBooksController extends Controller
             ->where('book_requests.book_id', $id)
             ->where('book_requests.type', 'reserve')
             ->where('book_requests.status', 'approved')
-            ->select('book_requests.*', 'members.name as member_name')
+            ->select('book_requests.*', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"))
             ->orderBy('book_requests.request_date')
             ->get();
 
