@@ -209,20 +209,15 @@ class ActivityLogController extends Controller
     public function index(Request $request)
     {
         $type = $request->query('type');
-
         $query = DB::table('book_requests')
             ->join('books', 'books.id', '=', 'book_requests.book_id')
             ->join('members', 'members.id', '=', 'book_requests.member_id')
             ->whereIn('book_requests.status', ['approved', 'returned', 'rejected', 'fulfilled'])
-            ->select('book_requests.*', 'books.title',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"));
-
+            ->select('book_requests.*', 'books.title', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"));
         if ($type) {
             $query->where('book_requests.type', $type);
         }
-
         $logs = $query->orderByDesc('book_requests.updated_at')->get();
-
         return view('admin.activity-log.index', compact('logs', 'type'));
     }
 }---
@@ -363,17 +358,13 @@ class AdminDefaulterController extends Controller
             ->where('book_requests.type', 'issue')
             ->where('book_requests.status', 'approved')
             ->where('book_requests.due_date', '<', now())
-            ->select('book_requests.*', 'books.title',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"),
-                'members.email as member_email')
+            ->select('book_requests.*', 'books.title', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"), 'members.email as member_email')
             ->orderBy('book_requests.due_date')
             ->get();
-
         foreach ($defaulters as $d) {
             $d->days_overdue = now()->diffInDays($d->due_date);
             $d->projected_fine = $d->days_overdue * 5;
         }
-
         return view('admin.defaulters.index', compact('defaulters'));
     }
 }---
@@ -396,11 +387,10 @@ class AdminFineController extends Controller
             ->join('members', 'members.id', '=', 'book_requests.member_id')
             ->where('book_requests.type', 'return')
             ->where('book_requests.fine_amount', '>', 0)
-            ->select('book_requests.*', 'books.title',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"))
+            ->select('book_requests.*', 'books.title', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"))
             ->orderByDesc('book_requests.return_date')
             ->get();
-
+         
         // Lost-book fines (new)
         $lostFines = DB::table('book_requests')
             ->join('books', 'books.id', '=', 'book_requests.book_id')
@@ -408,8 +398,7 @@ class AdminFineController extends Controller
             ->where('book_requests.type', 'issue')
             ->where('book_requests.status', 'lost')
             ->where('book_requests.lost_fine_amount', '>', 0)
-            ->select('book_requests.*', 'books.title',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"))
+            ->select('book_requests.*', 'books.title', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"))
             ->orderByDesc('book_requests.updated_at')
             ->get();
 
@@ -422,11 +411,9 @@ class AdminFineController extends Controller
             'fine_status' => 'resolved',
             'updated_at'  => now(),
         ]);
-
         return back()->with('success', 'Fine marked as resolved.');
     }
-}
----
+}---
 ./app/Http/Controllers/Admin/AdminProfileController.php
 ---
 <?php
@@ -443,51 +430,48 @@ class AdminProfileController extends Controller
     public function edit()
     {
         $admin = DB::table('admins')->where('id', session('admin_id'))->first();
-
         return view('admin.profile', compact('admin'));
     }
 
     public function update(Request $request)
     {
         $adminId = session('admin_id');
-    
+
         $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name'  => 'required|string|max:255',
-            'email'      => 'required|email|max:255|unique:admins,email,' . $adminId,
+            'first_name'  => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name'   => 'required|string|max:255',
+            'email'       => 'required|email|max:255|unique:admins,email,' . $adminId,
         ]);
 
         DB::table('admins')->where('id', $adminId)->update([
-            'first_name' => $validated['first_name'],
-            'last_name'  => $validated['last_name'],
-            'email'      => $validated['email'],
-            'updated_at' => now(),
+            'first_name'  => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name'   => $validated['last_name'],
+            'email'       => $validated['email'],
+            'updated_at'  => now(),
         ]);
 
-        session(['admin_name' => $validated['first_name'] . ' ' . $validated['last_name']]);
+        session(['admin_name' => trim(implode(' ', array_filter([$validated['first_name'], $validated['middle_name'] ?? null, $validated['last_name']])))]);
+
         return back()->with('success', 'Profile updated.');
     }
 
     public function updatePassword(Request $request)
     {
         $adminId = session('admin_id');
-
         $validated = $request->validate([
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:6|confirmed',
         ]);
-
         $admin = DB::table('admins')->where('id', $adminId)->first();
-
         if (!Hash::check($validated['current_password'], $admin->password)) {
             return back()->withErrors(['current_password' => 'Current password is incorrect.']);
         }
-
         DB::table('admins')->where('id', $adminId)->update([
             'password' => Hash::make($validated['new_password']),
             'updated_at' => now(),
         ]);
-
         return back()->with('success', 'Password changed successfully.');
     }
 }---
@@ -510,7 +494,7 @@ class AdminRequestController extends Controller
             ->join('members', 'members.id', '=', 'book_requests.member_id')
             ->where('book_requests.status', 'pending')
             ->select('book_requests.*', 'books.title', 'books.available_copies',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"))
+                DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"))
             ->orderBy('book_requests.created_at')
             ->get();
 
@@ -569,7 +553,7 @@ class AdminRequestController extends Controller
                 'status'      => 'approved',
                 'return_date' => now(),
                 'fine_amount' => $fine,
-                'fine_status' => $fine > 0 ? 'unpaid' : 'paid',
+                'fine_status' => $fine > 0 ? 'unpaid' : 'resolved',
                 'updated_at'  => now(),
             ]);
 
@@ -591,7 +575,6 @@ class AdminRequestController extends Controller
                 "Your return of \"{$book->title}\" has been processed.{$fineMsg}"
             );
 
-            // FIFO auto-fulfill — now delegated to the service so it works from any trigger
             NotificationService::fulfillNextReservation($bookRequest->book_id);
 
         } elseif ($bookRequest->type === 'reserve') {
@@ -641,10 +624,6 @@ class AdminRequestController extends Controller
         return back()->with('success', 'Request rejected.');
     }
 
-    /**
-     * Mark a book as lost and apply a flat fine.
-     * Called from the issued-books detail page.
-     */
     public function markLost(int $id)
     {
         $issueRecord = DB::table('book_requests')
@@ -659,7 +638,6 @@ class AdminRequestController extends Controller
 
         $book = DB::table('books')->where('id', $issueRecord->book_id)->first();
 
-        // Use the book's replacement price; fall back to 0 if not set
         $lostFine = $book->replacement_price ?? 0;
 
         DB::table('book_requests')->where('id', $id)->update([
@@ -685,8 +663,7 @@ class AdminRequestController extends Controller
 
         return back()->with('success', "Book marked as lost." . ($lostFine > 0 ? " ₱{$lostFine} fine applied." : " No price set — update the book record."));
     }
-}
----
+}---
 ./app/Http/Controllers/Admin/IssueController.php
 ---
 <?php
@@ -703,16 +680,14 @@ class IssueController extends Controller
     {
         $memberSearch = $request->query('member_search');
         $bookSearch = $request->query('book_search');
-
         $members = DB::table('members')
             ->when($memberSearch, function ($q) use ($memberSearch) {
                 $q->where('first_name', 'like', "%{$memberSearch}%")
-                ->orWhere('last_name', 'like', "%{$memberSearch}%")
-                ->orWhere('email', 'like', "%{$memberSearch}%");
+                    ->orWhere('last_name', 'like', "%{$memberSearch}%")
+                    ->orWhere('email', 'like', "%{$memberSearch}%");
             })
             ->orderBy('first_name')
             ->get();
-
         $books = DB::table('books')
             ->where('available_copies', '>', 0)
             ->when($bookSearch, function ($q) use ($bookSearch) {
@@ -720,7 +695,6 @@ class IssueController extends Controller
             })
             ->orderBy('title')
             ->get();
-
         return view('admin.issue.create', compact('members', 'books', 'memberSearch', 'bookSearch'));
     }
 
@@ -730,31 +704,24 @@ class IssueController extends Controller
             'member_id' => 'required|integer',
             'book_id' => 'required|integer',
         ]);
-
         $member = DB::table('members')->where('id', $validated['member_id'])->first();
         $book = DB::table('books')->where('id', $validated['book_id'])->first();
-
         if (!$member || !$book) {
             return back()->with('error', 'Member or book not found.');
         }
-
         if ($book->available_copies < 1) {
             return back()->with('error', 'No available copies left for this book.');
         }
-
         $existing = DB::table('book_requests')
             ->where('member_id', $member->id)
             ->where('book_id', $book->id)
             ->where('type', 'issue')
             ->where('status', 'approved')
             ->first();
-
         if ($existing) {
             return back()->with('error', 'This member already has this book issued.');
         }
-
         DB::table('books')->where('id', $book->id)->decrement('available_copies');
-
         DB::table('book_requests')->insert([
             'member_id' => $member->id,
             'book_id' => $book->id,
@@ -766,7 +733,6 @@ class IssueController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
         return redirect()->route('admin.issue.create')->with('success', "Book '{$book->title}' issued directly to {$member->first_name} {$member->last_name}.");
     }
 }---
@@ -784,20 +750,17 @@ class IssuedBooksController extends Controller
     public function index()
     {
         $books = DB::table('books')->orderBy('title')->get();
-
         foreach ($books as $book) {
             $book->issued_count = DB::table('book_requests')
                 ->where('book_id', $book->id)
                 ->where('type', 'issue')
                 ->where('status', 'approved')
                 ->count();
-
             $book->queue_count = DB::table('book_requests')
                 ->where('book_id', $book->id)
                 ->where('type', 'reserve')
                 ->where('status', 'approved')
                 ->count();
-
             if ($book->available_copies < 1 && $book->queue_count > 0) {
                 $book->reservation_status = 'Reserved (queue active)';
             } elseif ($book->available_copies < 1) {
@@ -806,14 +769,12 @@ class IssuedBooksController extends Controller
                 $book->reservation_status = 'Available';
             }
         }
-
         return view('admin.issued-books.index', compact('books'));
     }
 
     public function show($id)
     {
         $book = DB::table('books')->where('id', $id)->first();
-
         if (!$book) {
             abort(404);
         }
@@ -823,23 +784,20 @@ class IssuedBooksController extends Controller
             ->where('book_requests.book_id', $id)
             ->where('book_requests.type', 'issue')
             ->where('book_requests.status', 'approved')
-            ->select('book_requests.*',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"),
-                'members.email as member_email')
+            ->select('book_requests.*', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"), 'members.email as member_email')
             ->orderBy('book_requests.due_date')
             ->get();
-
         foreach ($holders as $h) {
             $h->is_overdue = $h->due_date && now()->gt($h->due_date);
         }
-
+        
         // Also show lost records for this book
         $lostRecords = DB::table('book_requests')
             ->join('members', 'members.id', '=', 'book_requests.member_id')
             ->where('book_requests.book_id', $id)
             ->where('book_requests.type', 'issue')
             ->where('book_requests.status', 'lost')
-            ->select('book_requests.*', 'members.name as member_name', 'members.email as member_email')
+            ->select('book_requests.*', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"), 'members.email as member_email')
             ->orderByDesc('book_requests.updated_at')
             ->get();
 
@@ -848,15 +806,13 @@ class IssuedBooksController extends Controller
             ->where('book_requests.book_id', $id)
             ->where('book_requests.type', 'reserve')
             ->where('book_requests.status', 'approved')
-            ->select('book_requests.*',
-                DB::raw("CONCAT(members.first_name, ' ', members.last_name) as member_name"))
+            ->select('book_requests.*', DB::raw("CONCAT_WS(' ', members.first_name, members.middle_name, members.last_name) as member_name"))
             ->orderBy('book_requests.request_date')
             ->get();
 
         return view('admin.issued-books.show', compact('book', 'holders', 'queue', 'lostRecords'));
     }
-}
----
+}---
 ./app/Http/Controllers/Admin/MemberBookRequestController.php
 ---
 <?php
@@ -1074,43 +1030,35 @@ class MemberController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-
         $query = DB::table('members');
-
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                ->orWhere('last_name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
-
         $members = $query->orderBy('first_name')->get();
-
         return view('admin.users.index', compact('members', 'search'));
     }
 
     public function show($id)
     {
         $member = DB::table('members')->where('id', $id)->first();
-
         if (!$member) {
             abort(404);
         }
-
         $requests = DB::table('book_requests')
             ->join('books', 'books.id', '=', 'book_requests.book_id')
             ->where('book_requests.member_id', $id)
             ->select('book_requests.*', 'books.title')
             ->orderByDesc('book_requests.created_at')
             ->get();
-
         $unpaidFines = DB::table('book_requests')
             ->where('member_id', $id)
             ->where('fine_amount', '>', 0)
             ->where('fine_status', 'unpaid')
             ->sum('fine_amount');
-
         return view('admin.users.show', compact('member', 'requests', 'unpaidFines'));
     }
 }---
@@ -1138,18 +1086,14 @@ class AdminAuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
-
         $admin = DB::table('admins')->where('email', $credentials['email'])->first();
-
         if (!$admin || !Hash::check($credentials['password'], $admin->password)) {
             return back()->withErrors(['email' => 'Invalid email or password.'])->withInput();
         }
-
         session([
-            'admin_id'   => $admin->id,
-            'admin_name' => $admin->first_name . ' ' . $admin->last_name,
+            'admin_id' => $admin->id,
+            'admin_name' => trim(implode(' ', array_filter([$admin->first_name, $admin->middle_name, $admin->last_name]))),
         ]);
-
         return redirect()->route('admin.dashboard');
     }
 
@@ -1180,31 +1124,29 @@ class MemberAuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'first_name'     => 'required|string|max:255',
-            'last_name'      => 'required|string|max:255',
-            'email'          => 'required|email|max:255',
-            'address'        => 'nullable|string|max:255',
-            'contact_number' => 'nullable|string|max:20',
-            'password'       => 'required|string|min:6|confirmed',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'address' => 'nullable|string|max:255',
+            'contact_number' => 'required|string|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|max:20',
+            'password' => 'required|string|min:6|confirmed',
         ]);
-
         $existing = DB::table('members')->where('email', $validated['email'])->first();
-
         if ($existing) {
             return back()->withErrors(['email' => 'Email is already registered.'])->withInput();
         }
-
         DB::table('members')->insert([
-            'first_name'     => $validated['first_name'],
-            'last_name'      => $validated['last_name'],
-            'email'          => $validated['email'],
-            'address'        => $validated['address'] ?? null,
-            'contact_number' => $validated['contact_number'] ?? null,
-            'password'       => Hash::make($validated['password']),
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'address' => $validated['address'] ?? null,
+            'contact_number' => $validated['contact_number'],
+            'password' => Hash::make($validated['password']),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
-
         return redirect()->route('login')->with('success', 'Registration successful. You may now log in.');
     }
 
@@ -1219,18 +1161,14 @@ class MemberAuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
-
         $member = DB::table('members')->where('email', $credentials['email'])->first();
-
         if (!$member || !Hash::check($credentials['password'], $member->password)) {
             return back()->withErrors(['email' => 'Invalid email or password.'])->withInput();
         }
-
         session([
-            'member_id'   => $member->id,
-            'member_name' => $member->first_name . ' ' . $member->last_name,
+            'member_id' => $member->id,
+            'member_name' => trim(implode(' ', array_filter([$member->first_name, $member->middle_name, $member->last_name]))),
         ]);
-
         return redirect()->route('books.index');
     }
 
@@ -1502,56 +1440,48 @@ class ProfileController extends Controller
     public function edit()
     {
         $member = DB::table('members')->where('id', session('member_id'))->first();
-
         return view('member.profile', compact('member'));
     }
 
     public function update(Request $request)
     {
         $memberId = session('member_id');
-
         $validated = $request->validate([
-            'first_name'     => 'required|string|max:255',
-            'last_name'      => 'required|string|max:255',
-            'email'          => 'required|email|max:255|unique:members,email,' . $memberId,
-            'address'        => 'nullable|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:members,email,' . $memberId,
+            'address' => 'nullable|string|max:255',
             'contact_number' => 'nullable|string|max:20',
         ]);
-
         DB::table('members')->where('id', $memberId)->update([
-            'first_name'     => $validated['first_name'],
-            'last_name'      => $validated['last_name'],
-            'email'          => $validated['email'],
-            'address'        => $validated['address'] ?? null,
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'address' => $validated['address'] ?? null,
             'contact_number' => $validated['contact_number'] ?? null,
-            'updated_at'     => now(),
+            'updated_at' => now(),
         ]);
-
-        session(['member_name' => $validated['first_name'] . ' ' . $validated['last_name']]);
-
+        session(['member_name' => trim(implode(' ', array_filter([$validated['first_name'], $validated['middle_name'] ?? null, $validated['last_name']])))]);
         return back()->with('success', 'Profile updated.');
     }
 
     public function updatePassword(Request $request)
     {
         $memberId = session('member_id');
-
         $validated = $request->validate([
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:6|confirmed',
         ]);
-
         $member = DB::table('members')->where('id', $memberId)->first();
-
         if (!Hash::check($validated['current_password'], $member->password)) {
             return back()->withErrors(['current_password' => 'Current password is incorrect.']);
         }
-
         DB::table('members')->where('id', $memberId)->update([
             'password' => Hash::make($validated['new_password']),
             'updated_at' => now(),
         ]);
-
         return back()->with('success', 'Password changed successfully.');
     }
 }---
