@@ -9,7 +9,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('books.index') }}">Library Management System</a>
+        <a class="navbar-brand" href="{{ route('user-dashboard') }}">Library Management System</a>
         <div class="d-flex">
             @php
                 $unreadNotifCount = 0;

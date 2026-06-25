@@ -1,6 +1,10 @@
 @extends('layouts.admin')
 @section('title', 'Activity Log')
 @section('content')
+<div class="mb-3">
+    <a href="{{ route('admin.dashboard') }}" class="btn btn-primary"> Dashboard
+    </a>
+</div>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Activity Log</h3>
     <form method="GET" class="d-flex gap-2">

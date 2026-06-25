@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\IssueController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\IssuedBooksController;
+use App\Http\Controllers\UserDashboardController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -27,6 +28,7 @@ Route::get('/login', [MemberAuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [MemberAuthController::class, 'login']);
 Route::post('/logout', [MemberAuthController::class, 'logout'])->name('logout');
 
+Route::get('/user-dashboard', [UserDashboardController::class, 'index'])->name('user-dashboard');
 // Member-only
 Route::middleware('member.auth')->group(function () {
     Route::get('/books', [BookController::class, 'index'])->name('books.index');

@@ -1,7 +1,11 @@
 @extends('layouts.admin')
 @section('title', 'View Issued Books')
 @section('content')
-<h3>View Issued Books</h3>
+
+<div class="d-flex justify-content-between mb-3">
+    <h3>View Issued Books</h3>
+    <a href="{{ route('admin.issue.create') }}" class="btn btn-primary">Issue Book Directly</a>
+</div>
 
 <table class="table table-bordered">
     <thead>

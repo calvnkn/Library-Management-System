@@ -1,6 +1,10 @@
 @extends('layouts.admin')
 @section('title', 'Pending Requests')
 @section('content')
+<div class="mb-3">
+    <a href="{{ route('admin.dashboard') }}" class="btn btn-primary"> Dashboard
+    </a>
+</div>
 <h3>Pending Requests</h3>
 <table class="table table-bordered">
     <thead>
