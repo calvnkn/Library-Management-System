@@ -1,59 +1,270 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Library Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A web-based library management system built with Laravel and MySQL. It allows members to browse books, request to borrow or reserve them, manage returns and renewals, and view their borrowing history. Administrators can manage books, requests, issued books, overdue records, fines, and member accounts.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Member Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* Member registration and login
+* Browse available books
+* Search books by title, author, category, or ISBN
+* View book details
+* Request to borrow available books
+* Reserve unavailable books
+* View current and past book requests through My Books
+* Request book returns
+* Renew currently issued books
+* Edit profile information
+* Change password
+* View fines associated with borrowed or lost books
+* Notification unread-count support
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Administrator Features
 
-## Learning Laravel
+* Admin login and logout
+* Dashboard access
+* Add, edit, and delete books
+* View and manage member borrow, return, and reservation requests
+* Approve or reject requests
+* Directly issue books to members
+* View all issued books
+* Mark an issued book as lost
+* View overdue members through the Defaulter List
+* Calculate projected overdue fines
+* Manage late-return fines
+* Manage lost-book fines
+* Mark fines as paid
+* View member profiles and request history
+* View unpaid fine totals per member
+* View activity logs
+* Edit admin profile and password
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Fine Rules
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+The system uses the following fine rules:
 
-## Laravel Sponsors
+* Late return fine: ₱5.00 per overdue day
+* Lost book fine: stored separately as a lost-book fine amount
+* Overdue books display a projected fine before the book is returned
+* Late-return fines become recorded after the return request is approved
+* Administrators can mark unpaid fines as paid
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Reservation Queue
 
-### Premium Partners
+When a book has no available copies, members may submit a reservation request.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+The system supports a first-in, first-out reservation queue:
 
-## Contributing
+1. Members reserve an unavailable book.
+2. Reservations are placed in queue order.
+3. When a copy is returned, the next member in the queue can be processed for issuance.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Technologies Used
 
-## Code of Conduct
+* PHP
+* Laravel
+* MySQL
+* Blade Templates
+* Bootstrap
+* JavaScript
+* HTML and CSS
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Requirements
 
-## Security Vulnerabilities
+Before running the project, make sure the following are installed:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+* PHP
+* Composer
+* MySQL Server
+* Node.js and npm
+* Laravel-compatible environment such as XAMPP, Laragon, or PHP's built-in development server
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/your-username/your-repository-name.git
+```
+
+2. Open the project folder:
+
+```bash
+cd your-repository-name
+```
+
+3. Install PHP dependencies:
+
+```bash
+composer install
+```
+
+4. Install frontend dependencies:
+
+```bash
+npm install
+```
+
+5. Create the environment file:
+
+```bash
+copy .env.example .env
+```
+
+For macOS or Linux:
+
+```bash
+cp .env.example .env
+```
+
+6. Generate the application key:
+
+```bash
+php artisan key:generate
+```
+
+7. Configure the database in `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=librarydb
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Update the username and password if your MySQL setup uses different credentials.
+
+8. Create the database:
+
+```sql
+CREATE DATABASE librarydb;
+```
+
+9. Run migrations:
+
+```bash
+php artisan migrate
+```
+
+10. Run the frontend build process:
+
+```bash
+npm run dev
+```
+
+11. Start the Laravel server:
+
+```bash
+php artisan serve
+```
+
+12. Open the application in your browser:
+
+```text
+http://127.0.0.1:8000
+```
+
+## Database Notes
+
+The project uses a MySQL database named:
+
+```text
+librarydb
+```
+
+Important tables include:
+
+* `members`
+* `admins`
+* `books`
+* `book_requests`
+* `member_notifications`
+* `activity_logs`
+
+The `book_requests` table stores issue, return, reservation, overdue, late-fine, and lost-book related records.
+
+## Admin Fine Management
+
+The User Fines page separates fines into two categories:
+
+* Late Return Fines
+* Lost Book Fines
+
+An administrator can select **Mark as Paid** to update a fine's status from unpaid to paid/resolved.
+
+## Testing Overdue Books
+
+To test an overdue record in MySQL Workbench, update the issue date and due date of an approved issue request:
+
+```sql
+USE librarydb;
+
+UPDATE book_requests
+SET issue_date = '2026-05-20',
+    due_date = '2026-06-20'
+WHERE book_id = 13
+  AND member_id = 2
+  AND type = 'issue'
+  AND status = 'approved';
+```
+
+Use the correct `book_id` and `member_id` for your own test record.
+
+## Project Structure
+
+```text
+app/
+├── Http/
+│   └── Controllers/
+│       ├── Admin/
+│       ├── Auth/
+│       └── MemberBookRequestController.php
+resources/
+├── views/
+│   ├── admin/
+│   ├── auth/
+│   ├── layouts/
+│   └── member/
+routes/
+└── web.php
+database/
+├── migrations/
+└── seeders/
+```
+
+## Main Routes
+
+### Member Routes
+
+```text
+/register
+/login
+/books
+/my-books
+/profile
+```
+
+### Admin Routes
+
+```text
+/admin/login
+/admin/dashboard
+/admin/books
+/admin/requests
+/admin/issued-books
+/admin/defaulters
+/admin/fines
+/admin/users
+/admin/activity-log
+```
+
+## Contributors
+
+This project was developed as a library management system project.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is intended for academic and educational use.
