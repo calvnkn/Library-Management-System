@@ -8,7 +8,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('books.index') }}">Library System</a>
+        <a class="navbar-brand" href="{{ route('books.index') }}">Library Management System</a>
         <div class="d-flex">
             <a class="btn btn-outline-light btn-sm me-2" href="{{ route('books.index') }}">Catalog</a>
             <a class="btn btn-outline-light btn-sm me-2" href="{{ route('member.myBooks') }}">My Books</a>
