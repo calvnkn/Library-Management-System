@@ -10,7 +10,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('admin.dashboard') }}">Admin Panel</a>
+            <a class="navbar-brand" href="{{ route('admin.dashboard') }}">Library Management System</a>
             <div class="d-flex">
                 <a class="btn btn-outline-light btn-sm me-2" href="{{ route('admin.issuedBooks.index') }}">Issued Books</a>
                 <a class="btn btn-outline-light btn-sm me-2" href="{{ route('admin.books.index') }}">Manage Books</a>
